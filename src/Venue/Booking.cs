@@ -197,7 +197,7 @@ namespace Ivvy.API.Venue
         }
 
         [JsonProperty("bookingType")]
-        public BookingTypeOptions BookingType
+        public BookingTypeOptions? BookingType
         {
             get; set;
         }
