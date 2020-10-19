@@ -1,4 +1,5 @@
 using System;
+using System;
 using Ivvy.API.Json;
 using Newtonsoft.Json;
 
@@ -197,7 +198,7 @@ namespace Ivvy.API.Venue
         }
 
         [JsonProperty("bookingType")]
-        public BookingTypeOptions? BookingType
+        public BookingTypeOptions BookingType
         {
             get; set;
         }
