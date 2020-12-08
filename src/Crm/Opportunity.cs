@@ -1,3 +1,4 @@
+using System;
 using Newtonsoft.Json;
 
 namespace Ivvy.API.Crm
@@ -7,7 +8,7 @@ namespace Ivvy.API.Crm
     /// </summary>
     public class Opportunity
     {
-        [JsonProperty("id")]
+        [JsonProperty("id", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public int Id
         {
             get; set;
@@ -32,13 +33,13 @@ namespace Ivvy.API.Crm
         }
 
         [JsonProperty("stageId")]
-        public int StageId
+        public int? StageId
         {
             get; set;
         }
 
         [JsonProperty("typeId")]
-        public int TypeId
+        public int? TypeId
         {
             get; set;
         }
@@ -63,6 +64,24 @@ namespace Ivvy.API.Crm
 
         [JsonProperty("referralContactId")]
         public int? ReferralContactId
+        {
+            get; set;
+        }
+
+        [JsonProperty("companyLeadContactId")]
+        public int? CompanyLeadContactId
+        {
+            get; set;
+        }
+
+        [JsonProperty("stageReasonId")]
+        public int? StageReasonId
+        {
+            get; set;
+        }
+
+        [JsonProperty("closedDate")]
+        public DateTime? ClosedDate
         {
             get; set;
         }
