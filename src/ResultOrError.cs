@@ -40,6 +40,15 @@ namespace Ivvy.API
         }
 
         /// <summary>
+        /// Returns a key which may be used to fetch the details about the certain API request/response.
+        /// </summary>
+        [JsonProperty("apiCallDetailsKey")]
+        public string ApiCallDetailsKey
+        {
+            get; set;
+        }
+
+        /// <summary>
         /// Returns whether or not the api method call was successful.
         /// </summary>
         public bool IsSuccess()

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Ivvy.API.Json.Converters;
@@ -14,6 +16,9 @@ namespace Ivvy.API
     /// </summary>
     public partial class ApiClient : IApiClient
     {
+        private readonly Dictionary<string, ApiCallDetails> apiCallDetailsStorage =
+            new Dictionary<string, ApiCallDetails>();
+
         /// <summary>
         /// The api version.
         /// </summary>
@@ -103,12 +108,21 @@ namespace Ivvy.API
             message.Content.Headers.Add("IVVY-Date", ivvyDate);
             message.Content.Headers.Add("X-Api-Authorization", "IWS " + ApiKey + ":" + signature);
 
+            string detailsKey = null;
             HttpResponseMessage httpResponse = null;
             ResultOrError<T> result = null;
             try
             {
                 httpResponse = await httpClient.SendAsync(message);
                 var data = await httpResponse.Content.ReadAsStringAsync();
+                // Set the call details before the deserialization to avoid missing it in case of deserialization error.
+                detailsKey = InsertCallDetails(
+                    httpResponse.StatusCode,
+                    postData,
+                    data,
+                    message.Headers,
+                    httpResponse.Headers);
+
                 result = JsonConvert.DeserializeObject<ResultOrError<T>>(data, new ResponseConverter<T>());
                 if (result == null)
                 {
@@ -136,7 +150,54 @@ namespace Ivvy.API
                     httpResponse.Dispose();
                 }
             }
+
+            result.ApiCallDetailsKey = detailsKey;
+
             return result;
+        }
+
+        public ApiCallDetails GetApiCallDetails(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return default;
+            }
+
+            if (!apiCallDetailsStorage.ContainsKey(key))
+            {
+                return default;
+            }
+
+            var details = apiCallDetailsStorage[key];
+            // Remove it in order to be fetchable only once per instance.
+            apiCallDetailsStorage.Remove(key);
+
+            return details;
+        }
+
+        /// <summary>
+        /// Inserts the details into a storage and returns the key.
+        /// </summary>
+        /// <returns></returns>
+        private string InsertCallDetails(
+            HttpStatusCode statusCode,
+            string requestBody,
+            string responseBody,
+            HttpHeaders requestHeaders,
+            HttpHeaders responseHeaders)
+        {
+            var details = new ApiCallDetails
+            {
+                StatusCode = statusCode,
+                RequestBody = requestBody,
+                ResponseBody = responseBody,
+                RequestHeaders = requestHeaders,
+                ResponseHeaders = responseHeaders
+            };
+            var key = Guid.NewGuid().ToString("N");
+            apiCallDetailsStorage[key] = details;
+
+            return key;
         }
     }
 }
